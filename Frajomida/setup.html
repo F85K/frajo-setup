@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow">
@@ -15,6 +14,22 @@
     <link rel="manifest" href="favicon_io/site.webmanifest">
     <link rel="shortcut icon" href="favicon_io/favicon.ico">
     <link rel="stylesheet" href="styles.css">
+    <script>
+        // Configure API and Keycloak URLs for setup page
+        // For local development: http://localhost:8000 and http://localhost:8080
+        // For production: https://your-api-domain.com and https://your-keycloak-domain.com
+        // Set these before the page loads by adding to window object
+        if (!window.API_URL) {
+            // Default to localhost for development
+            // Override by setting window.API_URL in your deployment environment
+            window.API_URL = 'http://localhost:8000';
+        }
+        if (!window.KEYCLOAK_URL) {
+            // Default to localhost Keycloak
+            // Override by setting window.KEYCLOAK_URL for production
+            window.KEYCLOAK_URL = 'http://localhost:8080';
+        }
+    </script>
     <style>
         .setup-form {
             max-width: 600px;
@@ -586,7 +601,9 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-                    const response = await fetch('http://localhost:8000/setup/initialize', {
+                    // Get API URL from environment or use default
+                    const apiUrl = window.API_URL || 'http://localhost:8000';
+                    const response = await fetch(`${apiUrl}/setup/initialize`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -652,13 +669,16 @@
                 resultDiv.style.display = 'block';
 
                 if (type === 'success') {
+                    const apiUrl = window.API_URL || 'http://localhost:8000';
+                    const keycloakUrl = window.KEYCLOAK_URL || 'http://localhost:8080';
+                    
                     resultDiv.innerHTML = `
                         <h3>✅ Platform Setup Complete!</h3>
                         <p>Your platform has been successfully configured. Here are your API details:</p>
                         <div class="api-details">
-Platform URL: http://localhost:8000
+Platform URL: ${apiUrl}
 Admin Username: ${this.escapeHtml(data.adminUsername || 'admin')}
-API Base URL: http://localhost:8000
+API Base URL: ${apiUrl}
 
 Authentication:
 - Realm: platform
@@ -670,9 +690,15 @@ Next Steps:
 2. Create your first tenant via /tenants endpoint
 3. Start deploying applications!
 
-Documentation: Check the API docs at /docs
-
 ⚠️ <strong>Security Note:</strong> Save these credentials securely and never share them.
+                        </div>
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <a href="${apiUrl}/docs" target="_blank" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem; background: #007bff; color: white; border-radius: 4px; display: inline-block;">
+                                📚 Open API Documentation
+                            </a>
+                            <a href="${keycloakUrl}" target="_blank" class="btn-secondary" style="text-decoration: none; padding: 0.75rem 1.5rem; background: #28a745; color: white; border-radius: 4px; display: inline-block;">
+                                🔐 Open Keycloak Admin
+                            </a>
                         </div>
                     `;
                 } else {
