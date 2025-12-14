@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Setup – Frajomida</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+    <link rel="manifest" href="favicon_io/site.webmanifest">
+    <link rel="shortcut icon" href="favicon_io/favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .setup-form {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007acc;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .setup-btn {
+            background: #007acc;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .setup-btn:hover {
+            background: #0056b3;
+        }
+
+        .setup-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .result {
+            display: none;
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .password-strength {
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .password-strength.weak {
+            color: #dc3545;
+        }
+
+        .password-strength.medium {
+            color: #ffc107;
+        }
+
+        .password-strength.strong {
+            color: #28a745;
+        }
+
+        .form-group.error input {
+            border-color: #dc3545;
+        }
+
+        .rate-limit {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .api-details {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            font-weight: bold;
+        }
+
+        .step.active {
+            background: #007acc;
+            color: white;
+        }
+
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Frajomida</div>
+        <div class="nav-links">
+            <a href="frajomida.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="platform.html">Platform</a>
+            <a href="setup.html" class="active">Setup</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
+
+    <main class="page">
+        <div class="container">
+            <h1>Platform Setup</h1>
+            <p class="lede">
+                Get your multi-tenant platform up and running in minutes. Fill out the form below and we'll configure everything for you automatically.
+            </p>
+
+            <div class="step-indicator">
+                <div class="step active">1</div>
+                <div class="step">2</div>
+                <div class="step">3</div>
+            </div>
+
+            <form class="setup-form" id="setupForm">
+                <div class="form-group">
+                    <label for="organizationName">Organization Name *</label>
+                    <input type="text" id="organizationName" name="organizationName" required
+                           placeholder="Your Company Name" minlength="2" maxlength="50">
+                    <div class="error-message" id="orgNameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminEmail">Admin Email *</label>
+                    <input type="email" id="adminEmail" name="adminEmail" required
+                           placeholder="admin@yourcompany.com">
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminUsername">Admin Username *</label>
+                    <input type="text" id="adminUsername" name="adminUsername" required
+                           placeholder="admin" value="admin" pattern="[a-zA-Z0-9_]{3,20}">
+                    <div class="error-message" id="usernameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password *</label>
+                    <input type="password" id="adminPassword" name="adminPassword" required
+                           placeholder="Choose a secure password" minlength="8" maxlength="128">
+                    <div class="error-message" id="passwordError"></div>
+                    <div class="password-strength" id="passwordStrength"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password *</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required
+                           placeholder="Confirm your password">
+                    <div class="error-message" id="confirmError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="domain">Domain (optional)</label>
+                    <input type="text" id="domain" name="domain"
+                           placeholder="yourcompany.com" pattern="^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$">
+                    <div class="error-message" id="domainError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="plan">Plan Type</label>
+                    <select id="plan" name="plan">
+                        <option value="starter">Starter (1-5 tenants)</option>
+                        <option value="professional">Professional (unlimited tenants)</option>
+                        <option value="enterprise">Enterprise (custom features)</option>
+                    </select>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableMinio" name="enableMinio" checked>
+                    <label for="enableMinio">Enable MinIO storage provisioning</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableScanning" name="enableScanning" checked>
+                    <label for="enableScanning">Enable automated security scanning</label>
+                </div>
+
+                <button type="submit" class="setup-btn" id="setupBtn">
+                    🚀 Setup My Platform
+                </button>
+
+                <div class="loading" id="loading">
+                    <p>Setting up your platform... This may take a few minutes.</p>
+                    <div>⏳</div>
+                </div>
+            </form>
+
+            <div class="rate-limit" id="rateLimit">
+                Too many requests. Please wait before trying again.
+            </div>
+
+            <div class="result" id="result"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-info">
+                <p class="email-line">
+                    <a href="mailto:r1034515@student.thomasmore.be" class="mail-link">
+                        <span class="mail-icon">✉</span> mail to:
+                    </a> <a href="mailto:frajomida" class="mail-link">frajomida</a>
+                </p>
+            </div>
+            <div class="sponsors-section">
+                <h3>Sponsors</h3>
+                <div class="sponsors">
+                    <a href="https://lisa-pc-shop.netlify.app/" target="_blank" class="sponsor-link">
+                        <img src="lisa.jpg" alt="Lisa's PC Shop">
+                    </a>
+                    <a href="https://compucat.be/" target="_blank" class="sponsor-link">
+                        <img src="compucat.png" alt="Compucat">
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-center">
+            <p>@2025 team skillfull</p>
+            <div class="security-notice">
+                <small>🔒 Secure Setup | 🔍 Monitored | 🛡️ Rate Limited | 📦 Backed Up</small>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Rate limiting and monitoring
+        class SetupManager {
+            constructor() {
+                this.attempts = 0;
+                this.lastAttempt = 0;
+                this.maxAttempts = 3;
+                this.cooldownPeriod = 30000; // 30 seconds
+                this.sessionId = this.generateSessionId();
+                this.errors = [];
+                this.startTime = Date.now();
+
+                // Initialize form validation
+                this.initValidation();
+                this.initMonitoring();
+            }
+
+            generateSessionId() {
+                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            initValidation() {
+                // Real-time validation
+                document.getElementById('organizationName').addEventListener('blur', (e) => this.validateOrgName(e.target));
+                document.getElementById('adminEmail').addEventListener('blur', (e) => this.validateEmail(e.target));
+                document.getElementById('adminUsername').addEventListener('blur', (e) => this.validateUsername(e.target));
+                document.getElementById('adminPassword').addEventListener('input', (e) => this.validatePassword(e.target));
+                document.getElementById('confirmPassword').addEventListener('blur', (e) => this.validateConfirmPassword(e.target));
+                document.getElementById('domain').addEventListener('blur', (e) => this.validateDomain(e.target));
+
+                // Password strength indicator
+                document.getElementById('adminPassword').addEventListener('input', (e) => this.updatePasswordStrength(e.target.value));
+            }
+
+            initMonitoring() {
+                // Monitor form interactions
+                document.getElementById('setupForm').addEventListener('submit', (e) => {
+                    this.logEvent('form_submit_attempt');
+                    this.handleSubmit(e);
+                });
+
+                // Monitor page load
+                this.logEvent('page_load');
+            }
+
+            // Validation methods
+            validateOrgName(input) {
+                const error = document.getElementById('orgNameError');
+                const value = input.value.trim();
+
+                if (value.length < 2) {
+                    this.showError(error, 'Organization name must be at least 2 characters');
+                    return false;
+                }
+                if (value.length > 50) {
+                    this.showError(error, 'Organization name must be less than 50 characters');
+                    return false;
+                }
+                if (!/^[a-zA-Z0-9\s\-_.]+$/.test(value)) {
+                    this.showError(error, 'Organization name contains invalid characters');
+                    return false;
+                }
+
+                this.hideError(error);
+                return true;
+            }
+
+            validateEmail(input) {
+                const error = document.getElementById('emailError');
+                const value = input.value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!emailRegex.test(value)) {
+                    this.showError(error, 'Please enter a valid email address');
+                    return false;
+                }
+
+                this.hideError(error);
+                return true;
+            }
+
+            validateUsername(input) {
+                const error = document.getElementById('usernameError');
+                const value = input.value.trim();
+
+                if (value.length < 3) {
+                    this.showError(error, 'Username must be at least 3 characters');
+                    return false;
+                }
+                if (value.length > 20) {
+                    this.showError(error, 'Username must be less than 20 characters');
+                    return false;
+                }
+                if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+                    this.showError(error, 'Username can only contain letters, numbers, and underscores');
+                    return false;
+                }
+
+                this.hideError(error);
+                return true;
+            }
+
+            validatePassword(input) {
+                const error = document.getElementById('passwordError');
+                const value = input.value;
+
+                if (value.length < 8) {
+                    this.showError(error, 'Password must be at least 8 characters');
+                    return false;
+                }
+                if (value.length > 128) {
+                    this.showError(error, 'Password must be less than 128 characters');
+                    return false;
+                }
+                if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
+                    this.showError(error, 'Password must contain uppercase, lowercase, and number');
+                    return false;
+                }
+
+                this.hideError(error);
+                return true;
+            }
+
+            validateConfirmPassword(input) {
+                const error = document.getElementById('confirmError');
+                const password = document.getElementById('adminPassword').value;
+                const confirm = input.value;
+
+                if (password !== confirm) {
+                    this.showError(error, 'Passwords do not match');
+                    return false;
+                }
+
+                this.hideError(error);
+                return true;
+            }
+
+            validateDomain(input) {
+                const error = document.getElementById('domainError');
+                const value = input.value.trim();
+
+                if (value && !/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
+                    this.showError(error, 'Please enter a valid domain (e.g., company.com)');
+                    return false;
+                }
+
+                this.hideError(error);
+                return true;
+            }
+
+            updatePasswordStrength(password) {
+                const strengthDiv = document.getElementById('passwordStrength');
+                let score = 0;
+
+                if (password.length >= 8) score++;
+                if (/[a-z]/.test(password)) score++;
+                if (/[A-Z]/.test(password)) score++;
+                if (/\d/.test(password)) score++;
+                if (/[^a-zA-Z\d]/.test(password)) score++;
+
+                strengthDiv.className = 'password-strength';
+
+                if (score < 3) {
+                    strengthDiv.className += ' weak';
+                    strengthDiv.textContent = 'Weak password';
+                } else if (score < 4) {
+                    strengthDiv.className += ' medium';
+                    strengthDiv.textContent = 'Medium password';
+                } else {
+                    strengthDiv.className += ' strong';
+                    strengthDiv.textContent = 'Strong password';
+                }
+            }
+
+            showError(errorDiv, message) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                errorDiv.parentElement.classList.add('error');
+            }
+
+            hideError(errorDiv) {
+                errorDiv.style.display = 'none';
+                errorDiv.parentElement.classList.remove('error');
+            }
+
+            // Rate limiting
+            checkRateLimit() {
+                const now = Date.now();
+                if (this.attempts >= this.maxAttempts && (now - this.lastAttempt) < this.cooldownPeriod) {
+                    document.getElementById('rateLimit').style.display = 'block';
+                    this.logEvent('rate_limit_exceeded');
+                    return false;
+                }
+
+                if ((now - this.lastAttempt) > this.cooldownPeriod) {
+                    this.attempts = 0;
+                    document.getElementById('rateLimit').style.display = 'none';
+                }
+
+                return true;
+            }
+
+            // Logging and monitoring
+            logEvent(event, data = {}) {
+                const logEntry = {
+                    sessionId: this.sessionId,
+                    timestamp: new Date().toISOString(),
+                    event: event,
+                    userAgent: navigator.userAgent,
+                    url: window.location.href,
+                    data: data,
+                    duration: Date.now() - this.startTime
+                };
+
+                console.log('Setup Event:', logEntry);
+
+                // In production, send to monitoring service
+                // this.sendToMonitoring(logEntry);
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+
+                if (!this.checkRateLimit()) {
+                    return;
+                }
+
+                // Validate all fields
+                const isValid = [
+                    this.validateOrgName(document.getElementById('organizationName')),
+                    this.validateEmail(document.getElementById('adminEmail')),
+                    this.validateUsername(document.getElementById('adminUsername')),
+                    this.validatePassword(document.getElementById('adminPassword')),
+                    this.validateConfirmPassword(document.getElementById('confirmPassword')),
+                    this.validateDomain(document.getElementById('domain'))
+                ].every(valid => valid);
+
+                if (!isValid) {
+                    this.logEvent('validation_failed');
+                    return;
+                }
+
+                this.attempts++;
+                this.lastAttempt = Date.now();
+
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+
+                // Remove sensitive data from logs
+                const logData = { ...data };
+                delete logData.adminPassword;
+                delete logData.confirmPassword;
+                this.logEvent('setup_started', logData);
+
+                // Show loading state
+                document.getElementById('setupBtn').disabled = true;
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('rateLimit').style.display = 'none';
+
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
+                    const response = await fetch('http://localhost:8000/setup/initialize', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-Session-ID': this.sessionId
+                        },
+                        body: JSON.stringify(data),
+                        signal: controller.signal,
+                        mode: 'cors',
+                        credentials: 'omit'
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (parseError) {
+                        result = { message: 'Invalid response from server' };
+                    }
+
+                    if (response.ok) {
+                        this.logEvent('setup_success', { status: response.status });
+                        this.showResult('success', result);
+                        // Clear sensitive data from memory
+                        this.clearSensitiveData();
+                    } else {
+                        this.logEvent('setup_failed', { status: response.status, error: result.message });
+                        this.errors.push(result);
+                        this.showResult('error', result);
+                    }
+
+                } catch (error) {
+                    const errorInfo = {
+                        message: error.message,
+                        type: error.name,
+                        isTimeout: error.name === 'AbortError'
+                    };
+
+                    this.logEvent('network_error', errorInfo);
+                    this.errors.push(errorInfo);
+
+                    if (error.name === 'AbortError') {
+                        this.showResult('error', { message: 'Request timed out. Please try again.' });
+                    } else {
+                        this.showResult('error', { message: 'Network error. Please check your connection and try again.' });
+                    }
+                } finally {
+                    document.getElementById('setupBtn').disabled = false;
+                    document.getElementById('loading').style.display = 'none';
+                }
+            }
+
+            clearSensitiveData() {
+                // Clear passwords from form
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            }
+
+            showResult(type, data) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = `result ${type}`;
+                resultDiv.style.display = 'block';
+
+                if (type === 'success') {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Platform Setup Complete!</h3>
+                        <p>Your platform has been successfully configured. Here are your API details:</p>
+                        <div class="api-details">
+Platform URL: http://localhost:8000
+Admin Username: ${this.escapeHtml(data.adminUsername || 'admin')}
+API Base URL: http://localhost:8000
+
+Authentication:
+- Realm: platform
+- Client ID: platform-api
+- Client Secret: ${this.maskSecret(data.clientSecret || 'Check your .env file')}
+
+Next Steps:
+1. Use the admin credentials to log in
+2. Create your first tenant via /tenants endpoint
+3. Start deploying applications!
+
+Documentation: Check the API docs at /docs
+
+⚠️ <strong>Security Note:</strong> Save these credentials securely and never share them.
+                        </div>
+                    `;
+                } else {
+                    const retryCount = this.attempts < this.maxAttempts ? ` (${this.attempts}/${this.maxAttempts} attempts)` : '';
+                    resultDiv.innerHTML = `
+                        <h3>❌ Setup Failed${retryCount}</h3>
+                        <p>${this.escapeHtml(data.message || 'An error occurred during setup.')}</p>
+                        <p>Please check that all services are running and try again.</p>
+                        ${this.errors.length > 1 ? '<p><small>Multiple errors detected. Check browser console for details.</small></p>' : ''}
+                    `;
+                }
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            maskSecret(secret) {
+                if (!secret || secret.length < 10) return secret;
+                return secret.substring(0, 8) + '...' + secret.substring(secret.length - 4);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SetupManager();
+        });
+
+        // CSP violation reporting
+        document.addEventListener('securitypolicyviolation', (e) => {
+            console.error('CSP Violation:', {
+                violatedDirective: e.violatedDirective,
+                blockedURI: e.blockedURI,
+                sourceFile: e.sourceFile,
+                lineNumber: e.lineNumber
+            });
+        });
+    </script>
+</body>
+</html>
