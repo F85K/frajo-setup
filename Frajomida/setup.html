@@ -601,9 +601,7 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-                    // Get API URL from environment or use default
-                    const apiUrl = window.API_URL || 'http://localhost:8000';
-                    const response = await fetch(`${apiUrl}/setup/initialize`, {
+                    const response = await fetch('https://frajomida-api.onrender.com/setup/initialize', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -669,21 +667,30 @@
                 resultDiv.style.display = 'block';
 
                 if (type === 'success') {
-                    const apiUrl = window.API_URL || 'http://localhost:8000';
-                    const keycloakUrl = window.KEYCLOAK_URL || 'http://localhost:8080';
-                    
+                    const apiUrl = this.escapeHtml(data.apiUrl || 'https://frajomida-api.onrender.com');
+                    const healthUrl = this.escapeHtml(data.healthUrl || `${apiUrl}/health`);
+                    const docsUrl = this.escapeHtml(data.docsUrl || `${apiUrl}/docs`);
+                    const statusUrl = this.escapeHtml(data.tenantStatusUrl || `${apiUrl}/monitoring/tenants/${data.tenantSlug || 'tenant'}/status`);
+                    const metricsUrl = this.escapeHtml(data.tenantMetricsUrl || `${apiUrl}/monitoring/tenants/${data.tenantSlug || 'tenant'}/metrics`);
+
                     resultDiv.innerHTML = `
                         <h3>✅ Platform Setup Complete!</h3>
                         <p>Your platform has been successfully configured. Here are your API details:</p>
                         <div class="api-details">
-Platform URL: ${apiUrl}
+Platform URL: <a href="${apiUrl}" target="_blank" rel="noopener">${apiUrl}</a>
 Admin Username: ${this.escapeHtml(data.adminUsername || 'admin')}
 API Base URL: ${apiUrl}
 
 Authentication:
-- Realm: platform
-- Client ID: platform-api
+- Realm: ${this.escapeHtml(data.realm || 'platform')}
+- Client ID: ${this.escapeHtml(data.clientId || 'platform-api')}
 - Client Secret: ${this.maskSecret(data.clientSecret || 'Check your .env file')}
+
+Key Links:
+- Health: <a href="${healthUrl}" target="_blank" rel="noopener">${healthUrl}</a>
+- Docs (Swagger): <a href="${docsUrl}" target="_blank" rel="noopener">${docsUrl}</a>
+- Tenant status: <a href="${statusUrl}" target="_blank" rel="noopener">${statusUrl}</a>
+- Tenant metrics: <a href="${metricsUrl}" target="_blank" rel="noopener">${metricsUrl}</a>
 
 Next Steps:
 1. Use the admin credentials to log in
@@ -691,14 +698,6 @@ Next Steps:
 3. Start deploying applications!
 
 ⚠️ <strong>Security Note:</strong> Save these credentials securely and never share them.
-                        </div>
-                        <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                            <a href="${apiUrl}/docs" target="_blank" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem; background: #007bff; color: white; border-radius: 4px; display: inline-block;">
-                                📚 Open API Documentation
-                            </a>
-                            <a href="${keycloakUrl}" target="_blank" class="btn-secondary" style="text-decoration: none; padding: 0.75rem 1.5rem; background: #28a745; color: white; border-radius: 4px; display: inline-block;">
-                                🔐 Open Keycloak Admin
-                            </a>
                         </div>
                     `;
                 } else {
