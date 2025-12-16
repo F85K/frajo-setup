@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow">
@@ -14,22 +15,6 @@
     <link rel="manifest" href="favicon_io/site.webmanifest">
     <link rel="shortcut icon" href="favicon_io/favicon.ico">
     <link rel="stylesheet" href="styles.css">
-    <script>
-        // Configure API and Keycloak URLs for setup page
-        // For local development: http://localhost:8000 and http://localhost:8080
-        // For production: https://your-api-domain.com and https://your-keycloak-domain.com
-        // Set these before the page loads by adding to window object
-        if (!window.API_URL) {
-            // Default to localhost for development
-            // Override by setting window.API_URL in your deployment environment
-            window.API_URL = 'http://localhost:8000';
-        }
-        if (!window.KEYCLOAK_URL) {
-            // Default to localhost Keycloak
-            // Override by setting window.KEYCLOAK_URL for production
-            window.KEYCLOAK_URL = 'http://localhost:8080';
-        }
-    </script>
     <style>
         .setup-form {
             max-width: 600px;
